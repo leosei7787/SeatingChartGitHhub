@@ -1,0 +1,3 @@
+This Project tries to optimize assignment of people (seating, sleeping etc) based on a set of constraints.
+
+We create a population of seating charts (aka plans) with a score and then try to iterate on each plan to generate random permutation and see if new plans gets better from previous one.

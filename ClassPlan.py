@@ -1,5 +1,6 @@
 #!/usr/bin/python3.6
 from random import randint
+import Utils
 
 
 ###### CLASS PLAN DE TABLE ######
@@ -21,10 +22,24 @@ class Plan:
     self.sortTable()
     self.updateScore()
 
+  def removeTable(self,table):
+    temp_tables = []
+    for t in self.tables:
+      if t.id != table.id:
+        temp_tables.append(t)
+    self.tables = temp_tables
+
   def updateScore(self):
-    # Get min score of tables
     self.sortTable()
-    self.score = self.tables[0].score
+    # Get min score of tables
+
+    score_list = []
+    for table in self.tables:
+      score_list += [table.score]
+    self.score = sum(score_list)#/float(len(score_list))
+    #print ("table score, total score %d "%self.score)
+    #print (score_list)
+    return self.score
 
   def sortTable(self):
     for table in self.tables:
@@ -44,103 +59,29 @@ class Plan:
     return temp
 
   def toStringDebug(self):
-    temp = "PLAN: %s (%.4f):"%(self.name,self.score)
+    temp = "--> PLAN: %s (%d):"%(self.name,self.score)
     for table in self.tables:
       temp += "\n-%s\n"%table.toStringDebug()
     return temp    
 
-  def getList(self):
-    temp = ""
-    for table in self.tables:
-      temp += "table %d (%.4f)"%(table.id,table.score)
-    return temp
-
-  def getTables(self):
-    return self.tables
-
   def getTotalTables(self):
     return len(self.tables)
 
-  def getWorseTable(self):
-    worse_table = self.tables[0]
-    for table in self.tables[1:]:
-      if table.score<worse_table.score:
-        worse_table = table
-    return worse_table
-
-  def setUsersOnTable(self,persons,tables,debug):
-    persons = sorted(persons, key=lambda obj: obj.seats,reverse=True)
-    # randomly add guests to table
-    total_table = len(tables)
-    for person in persons:
-      # pick a random table
-      selected_table = randint(0,total_table-1)
-      table = tables[selected_table]
-      # add to table
-      added = table.addPerson(person,debug)
-      if added != True:
-        tried = selected_table
-        selected_table = (selected_table + 1) % total_table
-        while tried != selected_table and added != True:
-         table = tables[selected_table]
-         added = table.addPerson(person,debug)
-         selected_table = (selected_table + 1) % total_table
-
-    self.updateScore()
 
   def mutate(self,temp_permutations):
     for i in list(range(temp_permutations)):
-      #print("new permutation")
+      self.sortTable()
 
-      #random table for swap
-      table1_index = randint(0,len(self.tables)-1)
-      table2_index = (table1_index + 1) % len(self.tables)
-      table1 = self.tables [table1_index]
-      table2 = self.tables [table2_index]
+      #take worse table with random table for swap
+      table1_index = 0
+      table2_index = randint(1,len(self.tables)-1)
+      table1 = self.tables[table1_index]
+      table2 = self.tables[table2_index]
 
       persons = table1.persons + table2.persons
       table1.persons = []
       table2.persons = []
       tables = [table1,table2]
-      self.setUsersOnTable(persons,tables,False)
-      
-
-      '''
-      if len(table1.persons) == 0:
-        #print("there is no one at table %s"%table1.id)
-        #print(table1.toString())
-        continue
-      else:
-        person1 = table1.persons[randint(0,len(table1.persons)-1)]
-      seats1 = person1.seats
-
-      index_table_2 = randint(0,len(self.tables)-1)
-      table2 = self.tables[index_table_2]
-
-      # find person in table 2 to match seats quantity of person in table 1
-
-      
-
-      
-      total_seats_2 = 0
-      persons2 = []
-      for person in table2.persons:
-        seat = person.seats
-        if seats1 < (total_seats_2 + seat):
-          continue
-        elif seats1 == total_seats_2:
-          break
-        else:
-          persons2.append(person)
-          total_seats_2 += seat
-      
-      # exchange people
-      table1.removePerson(person1)
-      for p2 in persons2:
-        table2.removePerson(p2)
-        table1.addPerson(p2)
-      table2.addPerson(person1)
-      '''
-
+      Utils.setUsersOnTable(persons,tables,False)
     self.updateScore()
 

@@ -2,9 +2,11 @@
 import copy
 from random import randint
 
+import Utils
 from ClassPerson import Person
 from ClassTable import Table
 from ClassPlan import Plan
+
 
 ######### CLASS FOR THE WORLD ########
 class World:
@@ -20,10 +22,12 @@ class World:
     self.table_configuration = table_configuration
     self.weight_config = weight_config
     self.mutation_config = mutation_config
+    self.sortGuests()
 
   def seedRandomPlans(self,number):
     for i in list(range(number)):
-      self.newRandomPlan(i)
+      plan = self.newRandomPlan(i)
+      self.plans.append(plan)
 
   def addPlan(self,plan):
     self.plans.append(plan)
@@ -61,20 +65,21 @@ class World:
 
     # Validate there is enough seats for all guests
     total_guests = self.getTotalGuests()
-    print('%d guests: %d seats)'%(total_guests,total_seats))
+    print('Seating %d guests on %d seats'%(total_guests,total_seats))
     if total_seats < total_guests:
       print('not enough room for %d guests (%d seats)'%(total_guests,total_seats))
       return
 
-    plan.setUsersOnTable(self.guests,plan.tables,False)
-    self.plans.append(plan)
+    Utils.setUsersOnTable(self.guests,plan.tables,False)
+    plan.updateScore()
+    return plan
 
   def iterate(self,round):
     for i in list(range(round)):
       print("\n<<<<<< round %d >>>>>>>>>>"%i)
       #print(self.getPlansList())
       self.updateGeneration()
-      print("\nbest plan score now %.4f"%self.getBestplan().score)
+      print("\nbest plan score now %.d"%self.getBestplan().score)
       #print(self.getBestplan().toStringDebug())
 
   def updateGeneration(self):
@@ -86,18 +91,12 @@ class World:
     for parent_plan in self.plans:
       best_plan = parent_plan
       best_score = parent_plan.score
-      
-
-      # Define max nb of mutation, highest score would get less permutations
-      plan_max_permutations = 1 + int(max_permutations * (1 - parent_plan.score) )
-      # define number of children, highest score would get more children
-      temp_childs = 10#1 + int(float(parent_plan.score) * int(max_childs))
  
       to_swap = False
-      for child in list(range(temp_childs)):
+      for child in list(range(max_childs)):
         #print("new child")
         #create new child
-        temp_permutations = randint(1, plan_max_permutations)
+        temp_permutations = randint(1, max_permutations)
         child_name = "%s-%d"%(parent_plan.name,child)
         child_tables = parent_plan.tables
         child_plan = Plan(child_name)
@@ -114,8 +113,6 @@ class World:
       
       if to_swap == True:
         self.swapPlans(parent_plan,best_plan)
-      print(self.getPlansList())
-      #self.debugPlans()
 
   def swapPlans(self,old,new):
     self.removePlan(old)
@@ -152,3 +149,12 @@ class World:
     for guest in self.guests:
       total += guest.seats
     return total
+
+  def toStringDebug(self):
+    temp = " --- total world update -- "
+    for plan in self.plans:
+      temp += plan.toStringDebug()
+
+    return temp
+
+

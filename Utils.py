@@ -1,29 +1,21 @@
 #!/usr/bin/python
+from random import randint
 
-#### Parse CSV into Guests ######
-def getGuests(file,truncate):
-  guests = []
-  total_guests = 0
-  max_row = truncate
-  with open(file, 'r') as csvfile:
-    reader = csv.reader(csvfile, delimiter=',', quotechar='|')
-    row_number = 0
-    for row in reader:
-      if row_number == 0:
-        row_number += 1
-        continue
-      if row_number > max_row:
-        break
-
-      name = row[0]
-      groups = row[1].split(",")
-      seats = int(row[2])
-      age = int(row[3])
-      languages = row[4].split(",")
-
-      temp = Person(name, seats, groups, languages, age)
-      guests.append(temp)
-
-      total_guests += seats
-      row_number += 1
-  return guests
+def setUsersOnTable(persons,tables,debug=False):
+  persons = sorted(persons, key=lambda obj: obj.seats,reverse=True)
+  # randomly add guests to table
+  total_table = len(tables)
+  for person in persons:
+    # pick a random table
+    selected_table = randint(0,total_table-1)
+    table = tables[selected_table]
+    # add to table
+    added = table.addPerson(person,debug)
+    if added != True:
+      tried = selected_table
+      selected_table = (selected_table + 1) % total_table
+      while tried != selected_table and added != True:
+       table = tables[selected_table]
+       added = table.addPerson(person,debug)
+       selected_table = (selected_table + 1) % total_table
+  return tables

@@ -11,7 +11,13 @@ class Person:
     self.age = age
 
   def toString(self):
-    return self.name+" ("+str(self.seats)+")"
+    return "%s (%d)"%(self.name,self.seats)
+
+  def toStringDebug(self):
+    string =  "%s seats: %d, age:%d - Groups:[%s], languages: [%s]" \
+              %(self.name,self.seats,self.age,",".join(self.groups), ",".join(self.languages))
+    return string
+
 
   def __eq__(self, other):
     return self.name == other.name  

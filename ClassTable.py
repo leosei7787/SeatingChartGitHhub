@@ -28,8 +28,8 @@ class Table:
       self.persons.append(person)
       if debug == True:
         print("added %s at table %d"%(person.name,self.id))
-    self.updateScore()
-    return True
+      self.updateScore()
+      return True
 
   def removePerson(self,person):
     temp_persons = []
@@ -39,30 +39,82 @@ class Table:
     self.persons = temp_persons
     self.updateScore()
 
-
   def getUsedSeats(self):
     seats = 0
-    if self.persons != []:
-      for person in self.persons:
+    # check noone is at the table
+    if len(self.persons) == 0:
+      return seats
+    # loop over persons to sum seats.
+    for person in self.persons:
         seats += person.seats
     return seats
 
   def getFreeSeats(self):
-    return self.seats - self.getUsedSeats()
+    return ( self.seats - self.getUsedSeats() )
 
+  # return list of unique groups
   def getGroups(self):
     total_group = []
     for person in self.persons:
       total_group += person.groups
     return set(total_group)
 
+  # return list of unique languages at the table
   def getLanguages(self):
     total_languages = []
     for person in self.persons:
       total_languages += person.languages
     return set(total_languages)
 
-  def getScoreGroup(self):
+
+
+  def updateScore(self):
+    table_score = 0
+    #Iterate over each unique set of persons (pa,pb)
+    for pa,pb in itertools.combinations(self.persons,2):
+      # remove from 1 from score on age diff (weighted by configuration)
+      age_score = -int(abs(pa.age - pb.age) / self.weight_config["age"])
+
+      # add config if similar language, 0 otherwise
+      language_score = 0
+      if not set(pa.languages).isdisjoint(pb.languages) is True: 
+        language_score = self.weight_config["language"]
+      
+
+      # add config if similar group
+      group_score = 0
+      if not set(pa.groups).isdisjoint(pb.groups) is True: 
+        group_score = self.weight_config["group"]
+
+      # check nogo list
+      nogo_score = 0
+      for nogo in self.weight_config["nogo_list"]:
+        if pa.name in nogo and pb.name in nogo:
+          nogo_score = -self.weight_config["nogo"]          
+
+      multiplier = (pa.seats + pb.seats) 
+      table_score += multiplier * (age_score + language_score + group_score + nogo_score)
+    self.score = table_score
+    return self.score
+
+  def toString(self):
+    temp = "table: %d (%d / %d) - Score %d: "%(self.id,self.getUsedSeats(), self.seats, self.score)
+    return temp
+
+  def toStringDebug(self):
+    temp = "table: %d (%d / %d), score: %.d:  "%(self.id,self.getUsedSeats(), self.seats, self.score)
+    #temp += "\n groups:%s langs: %s\n\n"%(",".join(self.getGroups()), ",".join(self.getLanguages()))
+    for person in self.persons:
+        temp += "\n%s, "%person.toStringDebug()
+    temp +"\n"
+    return temp
+
+
+
+
+
+'''
+def getScoreGroup(self):
     group_couple = 0
     couples = 0
     # Compare each couple of people only once.
@@ -116,27 +168,6 @@ class Table:
       if stdev>0:
         score = 1 /float(stdev)
     return score
+'''
 
 
-
-  def updateScore(self):
-    score = self.weight_config["group"] * self.getScoreGroup() 
-    score += self.weight_config["language"] * self.getScoreLanguage() 
-    score += self.weight_config["age"] * self.getScoreAge()
-    score += self.weight_config["seat"]* self.getFreeSeatsScore()
-    #TODO: If table contains two person in NoGo tuple, reset score to 0
-    self.score = score
-
-  def toString(self):
-    temp = "table: %d (%d / %d) - Score %.4f: "%(self.id,self.getUsedSeats(), self.seats, self.score)
-    for person in self.persons:
-        temp += "%s, "%person.toString()
-    return temp
-
-  def toStringDebug(self):
-    temp = "table: %d (%d / %d), score: %.4f (age %.4f lang %.4f groups %.4f seat %.4f): "%(self.id,self.getUsedSeats(), self.seats, self.score, self.getScoreAge(), self.getScoreLanguage(), self.getScoreGroup(), self.getFreeSeatsScore())
-    #temp += "\n groups:%s langs: %s\n\n"%(",".join(self.getGroups()), ",".join(self.getLanguages()))
-    for person in self.persons:
-        temp += "\n%s, "%person.toString()
-    temp +"\n"
-    return temp

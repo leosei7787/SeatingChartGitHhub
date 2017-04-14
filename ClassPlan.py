@@ -74,27 +74,32 @@ class Plan:
       #take worse table with random table for swap
       table1_index = 0
       table2_index = randint(1,len(self.tables)-1)
+
       table1 = copy.deepcopy(self.tables[table1_index])
       table2 = copy.deepcopy(self.tables[table2_index])
-      tables = [table1,table2]
+      
+      # Store persons from two tables to swap.
+      combined_persons = table1.persons[:] + table2.persons[:]
+
+      table1.emptyTable()
+      table2.emptyTable()
+      new_tables = [table1,table2]
 
       if verbose == True:
         print("\n====  before mutation === ")
-        for table in tables:
+        for table in new_tables:
           print(table.toStringList())
         print("\n")
 
-      persons = table1.persons + table2.persons
-      table1.persons = []
-      table2.persons = []
-      Utils.setUsersOnTable(persons,tables,verbose)
+      # randomly assign set of persones on set of tables
+      Utils.setUsersOnTable(combined_persons,new_tables,verbose)
 
-      #update self tables
+      #update tables
       self.tables[table1_index] = table1
       self.tables[table2_index] = table2
       
       if verbose == True:
         print("\n====  After mutation === ")
-        for table in tables:
+        for table in new_tables:
           print(table.toStringList())
         print("\n")

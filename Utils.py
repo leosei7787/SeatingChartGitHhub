@@ -1,5 +1,7 @@
 #!/usr/bin/python
 from random import randint
+import json
+from pprint import pprint
 
 def setUsersOnTable(persons,tables,verbose=False):
   persons = sorted(persons, key=lambda obj: obj.seats,reverse=True)
@@ -19,3 +21,8 @@ def setUsersOnTable(persons,tables,verbose=False):
        added = table.addPerson(person,verbose)
        selected_table = (selected_table + 1) % total_table
   return tables
+
+
+def getNogo(file):
+  with open(file) as data_file:    
+    return json.load(data_file)

@@ -92,7 +92,7 @@ class World:
       best_score = parent_plan.getScore()
 
       # Compute number of children 
-      max_child_plan = int(parent_plan.getScore())*int(max_childs)
+      max_child_plan = int(best_score)*int(max_childs)
       number_children = 1
       if max_child_plan > 1:
         number_children = randint(1, max_child_plan)

@@ -61,15 +61,17 @@ class Table:
       total_languages += person.languages
     return set(total_languages)
 
-
+  def emptyTable(self):
+    self.persons = []
 
   def getScore(self):
+    total_multiplier = 1
     table_score = 0
     #Iterate over each unique set of persons (pa,pb)
     for pa,pb in itertools.combinations(self.persons,2):
-      # remove from 1 from score on age diff (weighted by configuration)
-      delta = 1 + int(abs(pa.age - pb.age) / self.weight_config["age"])
-      age_score = int( 5 / delta ) 
+      # Age weight divided by age delta (so smaller delta will yield higher score)
+      delta = 1 + abs(pa.age - pb.age) 
+      age_score = int(self.weight_config["age"]) / delta 
 
       # add config if similar language, 0 otherwise
       language_score = 0
@@ -89,7 +91,10 @@ class Table:
 
       multiplier = (pa.seats + pb.seats) 
       table_score += multiplier * (age_score + language_score + group_score )
-    return table_score
+
+    # normalize by number of people to fairly compare various size table
+    total_score = 10 * table_score / self.seats
+    return total_score
 
   def toString(self):
     temp = "table: %d (%d / %d) - Score %d: "%(self.id,self.getUsedSeats(), self.seats, self.getScore())

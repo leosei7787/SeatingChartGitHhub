@@ -38,7 +38,7 @@ class Plan:
       score_list += [table.score]
     
     # Compute plan score
-    self.score = self.tables[0].score #sum(score_list)/float(len(score_list))
+    self.score = sum(score_list)/float(len(score_list)) #self.tables[0].score 
     #print (score_list)
     return self.score
 

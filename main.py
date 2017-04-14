@@ -16,7 +16,7 @@ table_configuration = [[12,8],[3,10]]
 #Score weighting
 
 # Age score: -1 per (age diff) / (age weight)
-weight_config = {"group":5,"language":1,"age":5, "nogo":50,
+weight_config = {"group":10,"language":1,"age":5, "nogo":50,
                 "nogo_list":[]}
 
 # Max child for best plans

@@ -33,9 +33,9 @@ guests = CSVImport.getGuests(file,header,1000)
 world = World(guests,table_configuration,weight_config,mutation_config)
 
 #Seeds (number of seeds)
-world.seedRandomPlans(15)
+world.seedRandomPlans(20)
 #Iterate (rounds)
-world.iterate(10)
+world.iterate(1000)
 
 
 best_plan = world.getBestplan()

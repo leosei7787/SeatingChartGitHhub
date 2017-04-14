@@ -42,12 +42,6 @@ class World:
   def sortGuests(self):
     self.guests = sorted(self.guests, key=lambda obj: obj.seats,reverse=True)
 
-  def getGuestsList(self):
-    temp =""
-    for guest in self.guests:
-      temp += "%s (%d) "%(guest.name,guest.seats)
-    return temp
-
   def newRandomPlan(self,i):
     name = "plan %s"%i
     plan = Plan(name)
@@ -76,9 +70,9 @@ class World:
 
   def iterate(self,round):
     for i in list(range(round)):
-      print("\n<<<<<< round %d >>>>>>>>>>"%i)
-      #print(self.getPlansList())
-      self.updateGeneration()
+       self.updateGeneration()
+
+      print("\n<<<<<< round %d >>>>>>>>>>"%i)     
       print("\nbest plan score now %.d"%self.getBestplan().score)
       #print(self.getBestplan().toStringDebug())
 

@@ -26,15 +26,15 @@ mutation_config = {"max_childs":15,"max_permutations":3}
 file = sys.argv[1]
 # ---------------------------------------------
 
-# get 10 first rows
+# get guests
 guests = CSVImport.getGuests(file,header,1000)
 
-# Start word
+# Start world
 world = World(guests,table_configuration,weight_config,mutation_config)
 
 #Seeds (number of seeds)
 world.seedRandomPlans(15)
-#Iterate (round)
+#Iterate (rounds)
 world.iterate(10)
 
 

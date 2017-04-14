@@ -28,6 +28,9 @@ class Plan:
     self.tables = temp_tables
 
   def getScore(self):
+    if len(self.tables) == 0:
+      return 0
+
     self.sortTable()
     score_list = []
     for table in self.tables:
@@ -67,39 +70,39 @@ class Plan:
     return len(self.tables)
 
 
-  def mutate(self,temp_permutations,verbose = False):
-    for i in list(range(temp_permutations)):
-      self.sortTable()
+  def mutate(self,verbose = False):
+    
+    #take worse table and swap with random other
+    self.sortTable()
+    table1_index = 0
+    table2_index = randint(1,len(self.tables)-1)
 
-      #take worse table with random table for swap
-      table1_index = 0
-      table2_index = randint(1,len(self.tables)-1)
+    # create new temporary table instances, copies of initial tables
+    table1 = copy.deepcopy(self.tables[table1_index])
+    table2 = copy.deepcopy(self.tables[table2_index])
+    
+    # Create list of combined persons at tables to swap
+    combined_persons = table1.persons[:] + table2.persons[:]
 
-      table1 = copy.deepcopy(self.tables[table1_index])
-      table2 = copy.deepcopy(self.tables[table2_index])
-      
-      # Store persons from two tables to swap.
-      combined_persons = table1.persons[:] + table2.persons[:]
+    # Remove existing guest from temp tables instances
+    table1.emptyTable()
+    table2.emptyTable()
 
-      table1.emptyTable()
-      table2.emptyTable()
-      new_tables = [table1,table2]
+    if verbose == True:
+      print("\n====  before mutation === ")
+      print(table1.toStringList())
+      print(table2.toStringList())
+      print("\n")
 
-      if verbose == True:
-        print("\n====  before mutation === ")
-        for table in new_tables:
-          print(table.toStringList())
-        print("\n")
+    # randomly assign set of persones on two temporary tables
+    Utils.setUsersOnTable(combined_persons,[table1,table2],verbose)
 
-      # randomly assign set of persones on set of tables
-      Utils.setUsersOnTable(combined_persons,new_tables,verbose)
-
-      #update tables
-      self.tables[table1_index] = table1
-      self.tables[table2_index] = table2
-      
-      if verbose == True:
-        print("\n====  After mutation === ")
-        for table in new_tables:
-          print(table.toStringList())
-        print("\n")
+    # update plan tables
+    self.tables[table1_index] = table1
+    self.tables[table2_index] = table2
+    
+    if verbose == True:
+      print("\n====  After mutation === ")
+      for table in new_tables:
+        print(table.toStringList())
+      print("\n")

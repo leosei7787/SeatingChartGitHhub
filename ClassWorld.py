@@ -24,10 +24,12 @@ class World:
     self.mutation_config = mutation_config
     self.sortGuests()
 
-  def seedRandomPlans(self,number):
+  def seedRandomPlans(self,number,verbose=False):
     for i in list(range(number)):
       plan = self.newRandomPlan(i)
       self.plans.append(plan)
+      if verbose == True:
+        print("new random plan %s"%plan.name)
 
   def addPlan(self,plan):
     self.plans.append(plan)
@@ -43,6 +45,8 @@ class World:
     self.guests = sorted(self.guests, key=lambda obj: obj.seats,reverse=True)
 
   def sortPlans(self):    
+    if len(self.plans) == 0:
+      return
     self.plans  = sorted(self.plans, key=lambda obj: obj.getScore())
 
   def newRandomPlan(self,i):
@@ -73,16 +77,14 @@ class World:
   def iterate(self,round,verbose = False):
     for i in list(range(round)):
       print("\n<<<<<< round %d >>>>>>>>>>"%i)
-      best_plan = self.getBestplan() 
-      print("\nBefore update, best plan %s, score %d"%(best_plan.name,best_plan.getScore()))
-      
       if verbose == True:
         print(self.toStringlist())
 
       self.updateGeneration(verbose)
+      best_plan = self.getBestplan() 
+      print("New best plan %s, score %d"%(best_plan.name,best_plan.getScore()))
 
   def updateGeneration(self,verbose=False):
-    max_permutations = self.mutation_config["max_permutations"]
     max_childs = self.mutation_config["max_childs"]
     
 
@@ -119,7 +121,7 @@ class World:
       for child_plan in children:
         if verbose == True:
           print("child %s (%d) up for mutation"%(child_plan.name,child_plan.getScore()))
-        child_plan.mutate(1,verbose)
+        child_plan.mutate(verbose)
         child_score = child_plan.getScore()
 
         if verbose == True:

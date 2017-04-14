@@ -65,7 +65,6 @@ class Table:
     self.persons = []
 
   def getScore(self):
-    total_multiplier = 1
     table_score = 0
     #Iterate over each unique set of persons (pa,pb)
     for pa,pb in itertools.combinations(self.persons,2):

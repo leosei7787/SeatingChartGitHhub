@@ -64,7 +64,7 @@ class World:
 
     # Validate there is enough seats for all guests
     total_guests = self.getTotalGuests()
-    print('Seating %d guests on %d seats'%(total_guests,total_seats))
+
     if total_seats < total_guests:
       print('not enough room for %d guests (%d seats)'%(total_guests,total_seats))
       return
@@ -75,11 +75,12 @@ class World:
 
   def iterate(self,round,verbose = False):
     for i in list(range(round)):
+      print("\n<<<<<< round %d >>>>>>>>>>"%i)
+      best_plan = self.getBestplan() 
+      print("\nBefore update, best plan %s, score %d"%(best_plan.name,best_plan.score))
+      
       if verbose == True:
-        best_plan = self.getBestplan()     
-        print("\nBefore update, best plan %s, score %d"%(best_plan.name,best_plan.score))
         print(self.toStringPlanlist())
-        print("\n<<<<<< round %d >>>>>>>>>>"%i)
 
       self.updateGeneration(verbose)
 

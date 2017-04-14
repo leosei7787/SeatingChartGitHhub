@@ -20,24 +20,27 @@ weight_config = {"group":5,"language":1,"age":5, "nogo":50,
                 "nogo_list":[]}
 
 # Max child for best plans
-mutation_config = {"max_childs":15,"max_permutations":3}
+mutation_config = {"max_childs":1,"max_permutations":3}
 
 # get file
 file = sys.argv[1]
 # ---------------------------------------------
 
 # get guests
-guests = CSVImport.getGuests(file,header,1000)
+guests = CSVImport.getGuests(file,header,100)
 
 # Start world
 world = World(guests,table_configuration,weight_config,mutation_config)
 
 #Seeds (number of seeds)
-world.seedRandomPlans(20)
-#Iterate (rounds)
-world.iterate(1000)
+world.seedRandomPlans(5)
+#Iterate (round, verbose)
+world.iterate(150,False)
 
 
 best_plan = world.getBestplan()
 print("---\n\n")
 print(best_plan.toStringDebug())
+
+  
+  

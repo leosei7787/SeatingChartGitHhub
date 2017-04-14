@@ -7,10 +7,12 @@ import Utils
 class Plan:
   'Define a TablePlan'
 
-  def __init__(self,name):
-    self.tables = []
-    self.score = 1
+  def __init__(self,name, tables = []):
+    self.score = 0
     self.name = name
+    self.tables = tables
+    if len(tables)>0:
+      self.updateScore()
 
   def addTable(self, table):
     self.tables.append(table)
@@ -31,13 +33,12 @@ class Plan:
 
   def updateScore(self):
     self.sortTable()
-    # Get min score of tables
-
     score_list = []
     for table in self.tables:
       score_list += [table.score]
-    self.score = sum(score_list)#/float(len(score_list))
-    #print ("table score, total score %d "%self.score)
+    
+    # Compute plan score
+    self.score = self.tables[0].score #sum(score_list)/float(len(score_list))
     #print (score_list)
     return self.score
 
@@ -53,10 +54,8 @@ class Plan:
     return total
 
   def toString(self):
-    temp = "PLAN: %s (%.4f)"%(self.name,self.score)
-    for table in self.tables:
-      temp += "\n-%s"%table.toString()
-    return temp
+    return "%s, score %d"%(self.name,self.score)
+
 
   def toStringDebug(self):
     temp = "--> PLAN: %s (%d):"%(self.name,self.score)
@@ -68,7 +67,7 @@ class Plan:
     return len(self.tables)
 
 
-  def mutate(self,temp_permutations):
+  def mutate(self,temp_permutations,verbose = False):
     for i in list(range(temp_permutations)):
       self.sortTable()
 

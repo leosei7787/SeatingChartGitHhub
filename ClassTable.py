@@ -73,7 +73,8 @@ class Table:
     #Iterate over each unique set of persons (pa,pb)
     for pa,pb in itertools.combinations(self.persons,2):
       # remove from 1 from score on age diff (weighted by configuration)
-      age_score = -int(abs(pa.age - pb.age) / self.weight_config["age"])
+      delta = 1 + int(abs(pa.age - pb.age) / self.weight_config["age"])
+      age_score = int( 5 / delta ) 
 
       # add config if similar language, 0 otherwise
       language_score = 0
@@ -87,13 +88,13 @@ class Table:
         group_score = self.weight_config["group"]
 
       # check nogo list
-      nogo_score = 0
       for nogo in self.weight_config["nogo_list"]:
         if pa.name in nogo and pb.name in nogo:
-          nogo_score = -self.weight_config["nogo"]          
+          self.score = 0
+          return self.score
 
       multiplier = (pa.seats + pb.seats) 
-      table_score += multiplier * (age_score + language_score + group_score + nogo_score)
+      table_score += multiplier * (age_score + language_score + group_score )
     self.score = table_score
     return self.score
 

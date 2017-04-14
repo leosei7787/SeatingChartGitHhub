@@ -42,10 +42,8 @@ class World:
   def sortGuests(self):
     self.guests = sorted(self.guests, key=lambda obj: obj.seats,reverse=True)
 
-  def sortPlans(self):
-    for plan in self.plans:
-        plan.updateScore()
-    self.plans  = sorted(self.plans, key=lambda obj: obj.updateScore())
+  def sortPlans(self):    
+    self.plans  = sorted(self.plans, key=lambda obj: obj.getScore())
 
   def newRandomPlan(self,i):
     name = "%s"%i
@@ -70,17 +68,16 @@ class World:
       return
 
     Utils.setUsersOnTable(self.guests,plan.tables,False)
-    plan.updateScore()
     return plan
 
   def iterate(self,round,verbose = False):
     for i in list(range(round)):
       print("\n<<<<<< round %d >>>>>>>>>>"%i)
       best_plan = self.getBestplan() 
-      print("\nBefore update, best plan %s, score %d"%(best_plan.name,best_plan.score))
+      print("\nBefore update, best plan %s, score %d"%(best_plan.name,best_plan.getScore()))
       
       if verbose == True:
-        print(self.toStringPlanlist())
+        print(self.toStringlist())
 
       self.updateGeneration(verbose)
 
@@ -92,16 +89,17 @@ class World:
     # go through plans
     for parent_plan in self.plans:
       best_plan = parent_plan
-      best_score = parent_plan.updateScore()
+      best_score = parent_plan.getScore()
 
       # Compute number of children 
-      max_child_plan = int(parent_plan.score)*int(max_childs)
+      max_child_plan = int(parent_plan.getScore())*int(max_childs)
       number_children = 1
       if max_child_plan > 1:
         number_children = randint(1, max_child_plan)
 
       if verbose == True:
-        print("plan %s (%d) up for reproduction with %d"%(parent_plan.name,parent_plan.score, number_children))
+        print("plan %s (%d) up for reproduction with %d children"%(parent_plan.name,parent_plan.getScore(), number_children))
+        print(parent_plan.toStringList())
  
       children = []
       for child in list(range(number_children)):
@@ -114,20 +112,18 @@ class World:
         children.append(child_plan)
 
         if verbose == True:
-          print("Children %s (%d) created"%(child_plan.name,child_plan.score))
+          print("Children %s (%d) created"%(child_plan.name,child_plan.getScore()))
 
+      # Go over each child to muate them and check if better than parent.
+      to_swap = False
       for child_plan in children:
-        # Mutate child
-        temp_permutations = randint(1, max_permutations)
         if verbose == True:
-          print("child %s (%d) up for %d mutation"%(child_plan.name,child_plan.score, temp_permutations))
-        child_plan.mutate(temp_permutations,verbose)
-        child_score = child_plan.updateScore()
+          print("child %s (%d) up for mutation"%(child_plan.name,child_plan.getScore()))
+        child_plan.mutate(1,verbose)
+        child_score = child_plan.getScore()
 
         if verbose == True:
-          print("child %s (%d) done with mutations"%(child_plan.name,child_plan.score))
-
-        to_swap = False
+          print("child %s (%d) done with mutations"%(child_plan.name,child_plan.getScore()))
         if child_score > best_score:
           best_plan = child_plan
           best_score = child_score
@@ -138,7 +134,7 @@ class World:
 
   def swapPlans(self,old,new,verbose = False):
     if verbose == True:
-      print (self.toStringPlanlist())
+      print (self.toStringlist())
     
     temp_plans = []
     for plan in self.plans:
@@ -150,7 +146,7 @@ class World:
 
     if verbose == True:
       print ("Swapped %s for %s"%(old.toString(),new.toString()))
-      print (self.toStringPlanlist())
+      print (self.toStringlist())
 
   def getBestplan(self):
     self.sortPlans()
@@ -168,10 +164,10 @@ class World:
       temp += plan.toStringDebug()
     return temp
 
-  def toStringPlanlist(self):
+  def toStringlist(self):
     temp = " --- total world update -- \n"
     for plan in self.plans:
-      temp += "\n plan %s Score:%d"%(plan.name,plan.score)
+      temp += "\n plan %s Score:%d"%(plan.name,plan.getScore())
     return temp
 
 

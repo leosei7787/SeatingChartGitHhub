@@ -12,12 +12,9 @@ class Table:
     self.seats = seats
     self.persons = []
     self.weight_config = weight_config
-    self.score = 0
-
 
   def setPersons(self,persons):
     self.persons = persons
-    self.updateScore()
   
   def addPerson(self,person,debug=False):
     if self.getFreeSeats() < person.seats:
@@ -28,7 +25,6 @@ class Table:
       self.persons.append(person)
       if debug == True:
         print("added %s at table %d"%(person.name,self.id))
-      self.updateScore()
       return True
 
   def removePerson(self,person):
@@ -37,7 +33,6 @@ class Table:
       if p.name != person.name:
         temp_persons.append(p)
     self.persons = temp_persons
-    self.updateScore()
 
   def getUsedSeats(self):
     seats = 0
@@ -68,7 +63,7 @@ class Table:
 
 
 
-  def updateScore(self):
+  def getScore(self):
     table_score = 0
     #Iterate over each unique set of persons (pa,pb)
     for pa,pb in itertools.combinations(self.persons,2):
@@ -90,85 +85,30 @@ class Table:
       # check nogo list
       for nogo in self.weight_config["nogo_list"]:
         if pa.name in nogo and pb.name in nogo:
-          self.score = 0
-          return self.score
+          return 0
 
       multiplier = (pa.seats + pb.seats) 
       table_score += multiplier * (age_score + language_score + group_score )
-    self.score = table_score
-    return self.score
+    return table_score
 
   def toString(self):
-    temp = "table: %d (%d / %d) - Score %d: "%(self.id,self.getUsedSeats(), self.seats, self.score)
+    temp = "table: %d (%d / %d) - Score %d: "%(self.id,self.getUsedSeats(), self.seats, self.getScore())
     return temp
 
+  def toStringList(self):
+    temp = "table: %d (%d / %d) - Score %d: "%(self.id,self.getUsedSeats(), self.seats, self.getScore())
+    p = []
+    for person in self.persons:
+      p.append(person.toString())
+    temp += ",".join(p)
+    return temp  
+
+
   def toStringDebug(self):
-    temp = "table: %d (%d / %d), score: %.d:  "%(self.id,self.getUsedSeats(), self.seats, self.score)
+    temp = "\ntable: %d (%d / %d), score: %.d:  "%(self.id,self.getUsedSeats(), self.seats, self.getScore())
     #temp += "\n groups:%s langs: %s\n\n"%(",".join(self.getGroups()), ",".join(self.getLanguages()))
     for person in self.persons:
         temp += "\n%s, "%person.toStringDebug()
     temp +"\n"
     return temp
-
-
-
-
-
-'''
-def getScoreGroup(self):
-    group_couple = 0
-    couples = 0
-    # Compare each couple of people only once.
-    for pa, pb in itertools.combinations(self.persons, 2):
-      la = pa.groups
-      lb = pb.groups
-      couples += pa.seats+pb.seats
-      # Check if there is at least one commong language
-      if not set(la).isdisjoint(lb) is True:
-        # Increase number of people that can speak, weighted by seat used.
-        group_couple += pa.seats+pb.seats
-    
-    # Normalize to get score of 0 - 1
-    score = 0
-    if couples > 0:
-      score = group_couple / float(couples)
-    return score
-
-
-  def getFreeSeatsScore(self):
-    return self.getUsedSeats() /  float(self.seats)
-
-  def getScoreLanguage(self):
-    speaking_couple = 0
-    couples = 0
-    # Compare each couple of people only once.
-    for pa, pb in itertools.combinations(self.persons, 2):
-      la = pa.languages
-      lb = pb.languages
-      couples += pa.seats+pb.seats
-      # Check if there is at least one commong language
-      if not set(la).isdisjoint(lb) is True:
-        # Increase number of people that can speak, weighted by seat used.
-        speaking_couple += pa.seats+pb.seats
-    # Normalize to get score of 0 - 1
-
-    score = 0
-    if couples > 0:
-      score = speaking_couple / float(couples)
-    return score
-
-  def getScoreAge(self):
-    ages = []
-    for person in self.persons:
-      temp = [person.age] * person.seats
-      ages += temp
-    score = 0
-    if len(ages)>1:
-      #STD divided in 5 years buckets to smooth things
-      stdev = statistics.stdev(ages) / 5
-      if stdev>0:
-        score = 1 /float(stdev)
-    return score
-'''
-
 

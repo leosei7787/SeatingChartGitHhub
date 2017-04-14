@@ -1,5 +1,6 @@
 #!/usr/bin/python3.6
 from random import randint
+import copy
 import Utils
 
 
@@ -8,21 +9,16 @@ class Plan:
   'Define a TablePlan'
 
   def __init__(self,name, tables = []):
-    self.score = 0
     self.name = name
     self.tables = tables
-    if len(tables)>0:
-      self.updateScore()
 
   def addTable(self, table):
     self.tables.append(table)
     self.sortTable()
-    self.updateScore()
 
   def setTables(self,tables):
     self.tables = tables
     self.sortTable()
-    self.updateScore()
 
   def removeTable(self,table):
     temp_tables = []
@@ -31,21 +27,17 @@ class Plan:
         temp_tables.append(t)
     self.tables = temp_tables
 
-  def updateScore(self):
+  def getScore(self):
     self.sortTable()
     score_list = []
     for table in self.tables:
-      score_list += [table.score]
+      score_list += [table.getScore()]
     
     # Compute plan score
-    self.score = sum(score_list)/float(len(score_list)) #self.tables[0].score 
-    #print (score_list)
-    return self.score
+    return sum(score_list)/float(len(score_list)) #self.tables[0].getScore() 
 
   def sortTable(self):
-    for table in self.tables:
-      table.updateScore()
-    self.tables = sorted(self.tables, key=lambda obj: obj.score)
+    self.tables = sorted(self.tables, key=lambda obj: obj.getScore())
 
   def getTotalSeats(self):
     total = 0
@@ -54,11 +46,19 @@ class Plan:
     return total
 
   def toString(self):
-    return "%s, score %d"%(self.name,self.score)
+    return "%s, score %d"%(self.name,self.getScore())
+  
+  def toStringList(self):
+    temp_tables = []
+    temp = "--> PLAN: %s (%d):"%(self.name,self.getScore())
+    for table in self.tables:
+      temp_tables.append(table.toStringList())
+    temp += "\n".join(temp_tables)
+    return temp  
 
 
   def toStringDebug(self):
-    temp = "--> PLAN: %s (%d):"%(self.name,self.score)
+    temp = "--> PLAN: %s (%d):"%(self.name,self.getScore())
     for table in self.tables:
       temp += "\n-%s\n"%table.toStringDebug()
     return temp    
@@ -74,13 +74,27 @@ class Plan:
       #take worse table with random table for swap
       table1_index = 0
       table2_index = randint(1,len(self.tables)-1)
-      table1 = self.tables[table1_index]
-      table2 = self.tables[table2_index]
+      table1 = copy.deepcopy(self.tables[table1_index])
+      table2 = copy.deepcopy(self.tables[table2_index])
+      tables = [table1,table2]
+
+      if verbose == True:
+        print("\n====  before mutation === ")
+        for table in tables:
+          print(table.toStringList())
+        print("\n")
 
       persons = table1.persons + table2.persons
       table1.persons = []
       table2.persons = []
-      tables = [table1,table2]
-      Utils.setUsersOnTable(persons,tables,False)
-    self.updateScore()
+      Utils.setUsersOnTable(persons,tables,verbose)
 
+      #update self tables
+      self.tables[table1_index] = table1
+      self.tables[table2_index] = table2
+      
+      if verbose == True:
+        print("\n====  After mutation === ")
+        for table in tables:
+          print(table.toStringList())
+        print("\n")

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from random import randint
 
-def setUsersOnTable(persons,tables,debug=False):
+def setUsersOnTable(persons,tables,verbose=False):
   persons = sorted(persons, key=lambda obj: obj.seats,reverse=True)
   # randomly add guests to table
   total_table = len(tables)
@@ -10,12 +10,12 @@ def setUsersOnTable(persons,tables,debug=False):
     selected_table = randint(0,total_table-1)
     table = tables[selected_table]
     # add to table
-    added = table.addPerson(person,debug)
+    added = table.addPerson(person,verbose)
     if added != True:
       tried = selected_table
       selected_table = (selected_table + 1) % total_table
       while tried != selected_table and added != True:
        table = tables[selected_table]
-       added = table.addPerson(person,debug)
+       added = table.addPerson(person,verbose)
        selected_table = (selected_table + 1) % total_table
   return tables

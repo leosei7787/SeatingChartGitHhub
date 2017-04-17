@@ -1,9 +1,10 @@
 #!/usr/bin/python3.6
 import itertools
 import statistics
+import math
 
 ###### CLASS TABLE ######
-class Table:
+class Table(object):
   'Define a Table'
   weight_config = {}
 
@@ -66,19 +67,21 @@ class Table:
 
   def getScore(self):
     table_score = 0
+    if len(self.persons) == 0:
+      return table_score
+
     #Iterate over each unique set of persons (pa,pb)
     for pa,pb in itertools.combinations(self.persons,2):
-      # Age weight divided by age delta (so smaller delta will yield higher score)
+      # Age weight from config divided by age diff (so smaller delta will yield higher score)
       delta = 1 + abs(pa.age - pb.age) 
       age_score = int(self.weight_config["age"]) / delta 
 
-      # add config if similar language, 0 otherwise
+      # language weight from config if at least one similar language, 0 otherwise
       language_score = 0
       if not set(pa.languages).isdisjoint(pb.languages) is True: 
         language_score = self.weight_config["language"]
       
-
-      # add config if similar group
+      # group weight from config if at least one similar group, 0 otherwise
       group_score = 0
       if not set(pa.groups).isdisjoint(pb.groups) is True: 
         group_score = self.weight_config["group"]
@@ -88,11 +91,21 @@ class Table:
         if pa.name in nogo and pb.name in nogo:
           return 0
 
-      multiplier = (pa.seats + pb.seats) 
+      # Protect against big age delta in diff group
+      if delta > self.weight_config["max_age_diff"] and group_score == 0:
+        return 0
+
+      multiplier = (pa.seats * pb.seats) 
       table_score += multiplier * (age_score + language_score + group_score )
 
-    # normalize by number of people to fairly compare various size table
-    total_score = 10 * table_score / self.seats
+    '''
+    # add boost score for each person with more than 1 seat (to account for )
+    for couple in self.persons:
+      if couple.seats > 1:
+        table_score += couple.seats * (int(self.weight_config["age"])+self.weight_config["language"]+self.weight_config["group"])
+    '''
+    # normalize by number of person to smooth for couple and various sizes
+    total_score = 10 * table_score / len(self.persons)
     return total_score
 
   def toString(self):

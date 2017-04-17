@@ -9,26 +9,31 @@ from ClassPlan import Plan
 
 
 ######### CLASS FOR THE WORLD ########
-class World:
+class World(object):
   'world of plan population'
   guests = []
   plans = []
   table_configuration = []
   weight_config = {}
-  mutation_config = {}
+  total_tables = 0
+  verbose = False
 
-  def __init__(self,guests,table_configuration,weight_config,mutation_config):
+  def __init__(self,guests,table_configuration,weight_config,verbose):
     self.guests = guests
     self.table_configuration = table_configuration
     self.weight_config = weight_config
-    self.mutation_config = mutation_config
+    for table in table_configuration:
+      self.total_tables += table[0]
+    self.verbose = verbose
+    if self.verbose == True:
+      print("%d total tables per plan"%self.total_tables)
     self.sortGuests()
-
-  def seedRandomPlans(self,number,verbose=False):
+    
+  def seedRandomPlans(self,number):
     for i in list(range(number)):
       plan = self.newRandomPlan(i)
       self.plans.append(plan)
-      if verbose == True:
+      if self.verbose == True:
         print("new random plan %s"%plan.name)
 
   def addPlan(self,plan):
@@ -51,18 +56,19 @@ class World:
 
   def newRandomPlan(self,i):
     name = "%s"%i
-    plan = Plan(name)
+    plan = Plan(name,self.total_tables,[])
     id_count = 0
     total_seats = 0
     # Go through configuration of table
-    for config in self.table_configuration:
-      number = config[0]
-      seats = config[1]
-      for i in list(range( number ) ):
+    for table_type in self.table_configuration:
+      quantity = table_type[0]
+      seats = table_type[1]
+      for i in list(range( quantity ) ):
         # add table to plan
         plan.addTable( Table(id_count,seats,self.weight_config) )
         total_seats += seats
         id_count += 1
+    print("%d table created %d total seats"%(id_count,total_seats))
 
     # Validate there is enough seats for all guests
     total_guests = self.getTotalGuests()
@@ -74,32 +80,28 @@ class World:
     Utils.setUsersOnTable(self.guests,plan.tables,False)
     return plan
 
-  def iterate(self,round,verbose = False):
+  def iterate(self,round):
     for i in list(range(round)):
       print("\n<<<<<< round %d >>>>>>>>>>"%i)
-      if verbose == True:
+      if self.verbose == True:
         print(self.toStringlist())
 
-      self.updateGeneration(verbose)
+      self.updateGeneration()
       best_plan = self.getBestplan() 
       print("New best plan %s, score %d"%(best_plan.name,best_plan.getScore()))
 
-  def updateGeneration(self,verbose=False):
-    max_childs = self.mutation_config["max_childs"]
-    
-
+  def updateGeneration(self):
     # go through plans
     for parent_plan in self.plans:
       best_plan = parent_plan
       best_score = parent_plan.getScore()
 
-      # Compute number of children 
-      max_child_plan = int(best_score)*int(max_childs)
+      # Compute number of children from score (higher score = more children)
       number_children = 1
-      if max_child_plan > 1:
-        number_children = randint(1, max_child_plan)
+      if best_score > 10:
+        number_children = randint(1, int(best_score/10))
 
-      if verbose == True:
+      if self.verbose == True:
         print("plan %s (%d) up for reproduction with %d children"%(parent_plan.name,parent_plan.getScore(), number_children))
         print(parent_plan.toStringList())
  
@@ -110,21 +112,21 @@ class World:
         temp_tables = []
         for table in  parent_plan.tables:
           temp_tables.append(table)
-        child_plan = Plan(child_name,temp_tables)    
+        child_plan = Plan(child_name,self.total_tables,temp_tables)    
         children.append(child_plan)
 
-        if verbose == True:
+        if self.verbose == True:
           print("Children %s (%d) created"%(child_plan.name,child_plan.getScore()))
 
       # Go over each child to muate them and check if better than parent.
       to_swap = False
       for child_plan in children:
-        if verbose == True:
+        if self.verbose == True:
           print("child %s (%d) up for mutation"%(child_plan.name,child_plan.getScore()))
-        child_plan.mutate(verbose)
+        child_plan.mutate(self.verbose)
         child_score = child_plan.getScore()
 
-        if verbose == True:
+        if self.verbose == True:
           print("child %s (%d) done with mutations"%(child_plan.name,child_plan.getScore()))
         if child_score > best_score:
           best_plan = child_plan
@@ -132,10 +134,10 @@ class World:
           to_swap = True
       
       if to_swap == True:
-        self.swapPlans(parent_plan,best_plan,verbose)
+        self.swapPlans(parent_plan,best_plan)
 
-  def swapPlans(self,old,new,verbose = False):
-    if verbose == True:
+  def swapPlans(self,old,new):
+    if self.verbose == True:
       print (self.toStringlist())
     
     temp_plans = []
@@ -146,7 +148,7 @@ class World:
         temp_plans.append(plan)
     self.plans = temp_plans
 
-    if verbose == True:
+    if self.verbose == True:
       print ("Swapped %s for %s"%(old.toString(),new.toString()))
       print (self.toStringlist())
 

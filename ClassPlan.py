@@ -3,20 +3,26 @@ from random import randint
 import copy
 import Utils
 
-
 ###### CLASS PLAN DE TABLE ######
-class Plan:
+class Plan(object):
   'Define a TablePlan'
 
-  def __init__(self,name, tables = []):
+  def __init__(self,name,total_tables, tables = []):
     self.name = name
     self.tables = tables
+    self.total_tables =  total_tables
 
   def addTable(self, table):
+    if len(self.tables) == self.total_tables:
+      print("No room for tables %s"%table.id)
+      print(self.toStringList())
+
     self.tables.append(table)
     self.sortTable()
 
   def setTables(self,tables):
+    if len(tables) > self.total_tables:
+      print("too many tables to add")
     self.tables = tables
     self.sortTable()
 
@@ -34,10 +40,12 @@ class Plan:
     self.sortTable()
     score_list = []
     for table in self.tables:
-      score_list += [table.getScore()]
-    
-    # Compute plan score
-    return sum(score_list)/float(len(score_list)) #self.tables[0].getScore() 
+      table_score = table.getScore()
+      score_list += [table_score]
+ 
+    # Compute plan score as avg counting worse table 
+    score = sum(score_list)/float(len(score_list)) + self.tables[0].getScore()  
+    return score
 
   def sortTable(self):
     self.tables = sorted(self.tables, key=lambda obj: obj.getScore())
@@ -53,7 +61,7 @@ class Plan:
   
   def toStringList(self):
     temp_tables = []
-    temp = "--> PLAN: %s (%d):"%(self.name,self.getScore())
+    temp = "--> PLAN: %s (%d):\n"%(self.name,self.getScore())
     for table in self.tables:
       temp_tables.append(table.toStringList())
     temp += "\n".join(temp_tables)
@@ -84,15 +92,15 @@ class Plan:
     # Create list of combined persons at tables to swap
     combined_persons = table1.persons[:] + table2.persons[:]
 
-    # Remove existing guest from temp tables instances
-    table1.emptyTable()
-    table2.emptyTable()
-
     if verbose == True:
       print("\n====  before mutation === ")
       print(table1.toStringList())
       print(table2.toStringList())
       print("\n")
+
+    # Remove existing guest from temp tables instances
+    table1.emptyTable()
+    table2.emptyTable()
 
     # randomly assign set of persones on two temporary tables
     Utils.setUsersOnTable(combined_persons,[table1,table2],verbose)
@@ -103,6 +111,6 @@ class Plan:
     
     if verbose == True:
       print("\n====  After mutation === ")
-      for table in new_tables:
-        print(table.toStringList())
+      print(table1.toStringList())
+      print(table2.toStringList())
       print("\n")

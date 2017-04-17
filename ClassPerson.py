@@ -1,6 +1,6 @@
 #!/usr/bin/python3.6
 ########## CLASS PERSON #########
-class Person:
+class Person(object):
   'Define a person'
 
   def __init__(self, name, seats, groups, languages, age):
